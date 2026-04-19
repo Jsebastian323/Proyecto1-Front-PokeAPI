@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch.js";
 import { useFavorites } from "../context/FavoritesContext.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import {
   getPokemonDetailUrl,
   getOfficialArtUrl,
@@ -10,6 +12,7 @@ import LoadingState from "../components/LoadingState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import TypeBadge from "../components/TypeBadge.jsx";
 import StatBar from "../components/StatBar.jsx";
+import ConfirmModal from "../components/ConfirmModal.jsx";
 
 export default function Detail() {
   const { id } = useParams();
@@ -17,9 +20,10 @@ export default function Detail() {
   const { data: pokemon, loading, error, refetch } = useFetch(
     getPokemonDetailUrl(id)
   );
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const { showToast } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Navegación anterior/siguiente dentro del rango disponible.
   const prevId = numericId > 1 ? numericId - 1 : null;
   const nextId = numericId < LIST_LIMIT ? numericId + 1 : null;
 
@@ -48,6 +52,28 @@ export default function Detail() {
 
   const fav = isFavorite(pokemon.id);
   const paddedId = String(pokemon.id).padStart(3, "0");
+
+  // Agregar a favoritos: directo + toast. Quitar de favoritos: abre confirmación.
+  const handleFavClick = () => {
+    if (fav) {
+      setConfirmOpen(true);
+    } else {
+      addFavorite({ id: pokemon.id, name: pokemon.name });
+      showToast({
+        type: "success",
+        message: `${pokemon.name} agregado a favoritos.`,
+      });
+    }
+  };
+
+  const handleConfirmRemove = () => {
+    removeFavorite(pokemon.id);
+    setConfirmOpen(false);
+    showToast({
+      type: "info",
+      message: `${pokemon.name} se quitó de favoritos.`,
+    });
+  };
 
   return (
     <section className="max-w-5xl mx-auto px-4 py-12">
@@ -81,7 +107,6 @@ export default function Detail() {
       </div>
 
       <article className="grid md:grid-cols-2 gap-6 bg-white border-3 border-pokeball-black shadow-nes p-6 md:p-8">
-        {/* Panel "pantalla" con la imagen oficial */}
         <div className="bg-pokedex-gray border-3 border-pokeball-black p-4 flex flex-col items-center justify-center">
           <p className="font-pixel text-xs text-pokedex-gray-dark self-start mb-2">
             #{paddedId}
@@ -127,10 +152,7 @@ export default function Detail() {
           </dl>
 
           <section aria-labelledby="stats-heading">
-            <h2
-              id="stats-heading"
-              className="font-pixel text-sm mb-3"
-            >
+            <h2 id="stats-heading" className="font-pixel text-sm mb-3">
               Estadísticas base
             </h2>
             <div className="space-y-2">
@@ -146,9 +168,7 @@ export default function Detail() {
 
           <button
             type="button"
-            onClick={() =>
-              toggleFavorite({ id: pokemon.id, name: pokemon.name })
-            }
+            onClick={handleFavClick}
             aria-pressed={fav}
             className={`font-pixel text-xs px-4 py-3 border-3 border-pokeball-black shadow-nes hover:-translate-y-0.5 transition-transform mt-2 ${
               fav
@@ -160,6 +180,17 @@ export default function Detail() {
           </button>
         </div>
       </article>
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="¿Quitar de favoritos?"
+        message={`${pokemon.name} ya no aparecerá en tu lista de favoritos. Esta acción se puede revertir.`}
+        confirmLabel="Sí, quitar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setConfirmOpen(false)}
+        variant="danger"
+      />
     </section>
   );
 }

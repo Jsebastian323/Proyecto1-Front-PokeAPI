@@ -26,3 +26,8 @@
     image-rendering: crisp-edges;
   }
 }
+
+/* Backdrop semitransparente para todos los <dialog> nativos */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
