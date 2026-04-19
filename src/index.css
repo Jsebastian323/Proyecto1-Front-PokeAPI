@@ -18,3 +18,11 @@
     @apply font-pixel tracking-tight;
   }
 }
+
+@layer utilities {
+  /* Mantiene los sprites pixel-art nítidos al escalar (sin interpolación) */
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+}
