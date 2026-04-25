@@ -35,6 +35,18 @@ export default {
         "nes-sm": "2px 2px 0px 0px #1A1A1A",
         "nes-lg": "6px 6px 0px 0px #1A1A1A",
         "nes-red": "4px 4px 0px 0px #A8082A",
+        "nes-white": "4px 4px 0px 0px #FFFFFF",
+        "nes-white-sm": "2px 2px 0px 0px #FFFFFF",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
+          "50%": { transform: "translateY(-12px) rotate(8deg)" },
+        },
+      },
+      animation: {
+        float: "float 6s ease-in-out infinite",
+        "float-slow": "float 9s ease-in-out infinite",
       },
       borderWidth: {
         3: "3px",
